@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="css/audiovisual.css">
+	<link href='http://fonts.googleapis.com/css?family=Righteous' rel='stylesheet'>
+
+	<script type="text/javascript" src="js/paper.min.js"></script>
+	<script type="text/javascript" src="js/audiovisual.js"></script>
+
+	<title>Audiograph</title>
+</head>
+
+<body>
+	<header>
+		<div>
+			<img src="resc/headphones.png">
+			<img src="resc/fullscreen.png">
+			<h1>audiograph requires fullscreen</h1>
+			<h1>wolfram recommends headphones</h1>
+		</div>
+	</header>
+
+	<nav class="clearfix">
+		<h1>audiograph by wolfram</h1>
+		<select id="EPs" onChange='recordNewEP(this)'>
+			<option selected value="bars">Bars</option>
+			<option value="circle">1 Cicle</option>
+			<option value="colors">Colors</option>
+		</select>
+	</nav>
+	
+	<canvas id="myCanvas"></canvas>
+
+	<footer>
+		<audio controls id="myAudio" src="resc/stolen-dance.milky-chance.mp3"></audio>
+		<input type="file" id="newLP" onchange='recordNewLP(this)'>
+	</footer>
+
+</body>
+</html>
