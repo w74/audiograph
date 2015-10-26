@@ -1,39 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<title>Audiograph</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+
 	<link rel="stylesheet" href="css/audiovisual.css">
 	<link href='http://fonts.googleapis.com/css?family=Righteous' rel='stylesheet'>
-
+<!-- 
 	<script type="text/javascript" src="js/paper.min.js"></script>
 	<script type="text/javascript" src="js/audiovisual.js"></script>
-
-	<title>Audiograph</title>
+ -->
 </head>
 
 <body>
-	<header>
+	<!-- <header>
 		<div>
-			<img src="resc/headphones.png">
 			<img src="resc/fullscreen.png">
-			<h1>audiograph requires fullscreen</h1>
-			<h1>wolfram recommends headphones</h1>
+			<img src="resc/headphones.png">
+			<h2>audiograph runs best at fullscreen</h2>
+			<h2>wolfram recommends headphones</h2>
 		</div>
 	</header>
-
-	<nav class="clearfix">
-		<h1>audiograph by wolfram</h1>
+ -->
+	<nav>
+		<h1>audiograph</h1>
 		<select id="EPs" onChange='recordNewEP(this)'>
 			<option selected value="bars">Bars</option>
-			<option value="circle">1 Cicle</option>
+			<option value="circle">Circle</option>
 			<option value="colors">Colors</option>
 		</select>
 	</nav>
-	
+
 	<canvas id="myCanvas"></canvas>
 
 	<footer>
-		<audio controls id="myAudio" src="resc/stolen-dance.milky-chance.mp3"></audio>
-		<input type="file" id="newLP" onchange='recordNewLP(this)'>
+		<audio controls id="myAudio" src=""></audio>
+		<label>
+			<input type="file" id="newFile" onchange='recordNewLP(this)'/>
+			<span>change music</span>
+		</label>
 	</footer>
 
 </body>

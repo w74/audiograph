@@ -1,19 +1,30 @@
+/*-----------------------------------
+		01. Globals
+-----------------------------------*/
+*{ box-sizing: border-box; }
 html, body{
 	margin: 0;
 	padding: 0;
 }
-.clearfix:after {
-  content: "";
-  display: table;
-  clear: both;
-}
-h1{
+html{ font-size: 62.5%; }
+
+h1, h2, select, label{
 	font-family: 'Righteous', cursive;
-	font-size: 20pt;
+	line-height: 1;
 	text-transform: uppercase;
 	color: black;
+	margin: 0;
 }
+h1{ font-size: 3rem; }
+h2{ font-size: 2.5rem; }
+select:focus, option:focus{
+	outline: none;
+}
+label:hover{ cursor: pointer; }
 
+/*-----------------------------------
+		02. Header
+-----------------------------------*/
 header{
 	position: absolute;
 	width: 100%;
@@ -22,14 +33,11 @@ header{
 	opacity: 1;
 	z-index: 99;
 
-	-moz-animation: curtainsUp 0.5s linear 3s;
-	-moz-animation-fill-mode: forwards;
-	-webkit-animation: curtainsUp 0.5s linear 3s;
-	-webkit-animation-fill-mode: forwards;
 	animation: curtainsUp 0.5s linear 3s;
 	animation-fill-mode: forwards;
 }
 header div{
+	display: inline-block;
 	position: relative;
 	top: 50%;
 	left: 50%;
@@ -41,51 +49,123 @@ header div{
 }
 header img{
 	display: inline-block;
-	width: 10%;
-	height: 10%;
+	width: 100px;
+	height: 100px;
 }
 header img:first-child{
 	margin-right: 5%;
 }
+header h2{ margin-top: 20px; }
 
+/*-----------------------------------
+		03. Nav
+-----------------------------------*/
 nav{
-	width: 80%;
-	padding: 20px;
+	position: relative;
 	margin: 0 auto;
-	vertical-align: center;
+	padding: 20px 0;
+	width: 80%;
 }
 nav h1{
-	float: left;
-	margin: 0;
+	display: inline-block;
+}
+nav h1::after{
+	content: " by wolfram";
 }
 nav select{
-	float: right;
-	height: 20pt;
+	position: absolute;
+	right: 0;
+	border: none;
+	border-bottom: 3px solid black;
+	padding: 5px 35px 5px 5px;
+	font-size: 2rem;
+	background: url(../resc/down.svg) 96% 50% / 15% no-repeat transparent;
+  appearance: none;
+  -moz-appearance: none;
+	-webkit-appearance: none;
+}
+nav select:hover{
+	animation: bounce 1s linear infinite;
+}
+nav select, nav option{ letter-spacing: 1px; }
+
+/*-----------------------------------
+		04. Canvas
+-----------------------------------*/
+#myCanvas{
+	display: block;
+	margin: 0 auto;
+	width: 95vw;
+	height: calc(100vh - 140px);
+	min-height: 480px;
 }
 
+/*-----------------------------------
+		05. Footer
+-----------------------------------*/
 footer{
-	position: fixed;
-	bottom: 0%;
-	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin: 20px auto 0;
+	width: 80%;
+	font-size: 0;
 }
 #myAudio{
-	display: inline-block;
-	width: 80%;
+	flex: 2;
 }
-footer input{
+audio::-webkit-media-controls-enclosure{
+	max-width: none;
+}
+footer input{ display: none; }
+footer label{
 	position: relative;
-	bottom: 10px;
+	margin-left: 5%;
+	font-size: 2rem;
+	direction: rtl;
+	vertical-align: middle;
 }
+footer label::after{
+	content: "";
+	display: inline-block;
+	position: absolute;
+	margin-top: 1px;
+	width: 0;
+	height: 3px;
+	background-color: black;
 
-@-moz-keyframes curtainsUp{
-	from{opacity: 1;}
-	to{opacity: 0;}
+	transition: width 0.2s linear;
+	-webkit-transition: width 0.2s linear;
 }
-@-webkit-keyframes curtainsUp{
-	from{opacity: 1;}
-	to{opacity: 0;}
-}
+footer label:hover::after{ width: 100%; }
+
+/*-----------------------------------
+		06. Keyframes
+-----------------------------------*/
 @keyframes curtainsUp{
 	from{opacity: 1;}
 	to{opacity: 0;}
+}
+@keyframes bounce{
+	0%{background-position-y: 50%;}
+	8%{background-position-y: 65%;}
+	16%{background-position-y: 100%;}
+	24%{background-position-y: 65%;}
+	32%{background-position-y: 50%;}
+	49%{background-position-y: 15%;}
+	66%{background-position-y: 10%;}
+	83%{background-position-y: 15%;}
+	100%{background-position-y: 50%;}
+}
+
+/*-----------------------------------
+		07. Media Queries
+-----------------------------------*/
+@media (max-width: 720px){
+	footer, nav{
+		width: 95%;
+	}
+	nav h1::after{
+		content: "";
+	}
 }
