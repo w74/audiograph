@@ -2,25 +2,15 @@
 		01. Scope Globals
 -----------------------------------*/
 var a = new Object(); //audio
-/* 
-context = actx
-element = stereo
-source = artist
-analyser = mixer
-freqBin = mixtape
-*/
 var c = new Object(); //canvas
-/*
-element = c
-context = cctx
-*/
+var activeIndex = 0;
 
 init();
 
 function init(){
 	//setTimeout(function(){document.getElementsByTagName("header")[0].style.display="none";}, 3500);
 	loadVars();
-	changeAnim(0);
+	changeAnim(activeIndex);
 };
 
 function loadVars()
@@ -29,7 +19,7 @@ function loadVars()
 	a.element = document.getElementById('myAudio');
 	a.source = a.context.createMediaElementSource(a.element);
 	var temp = a.context.createAnalyser();
-	temp.smoothingTimeConstant = 0.9;
+	temp.smoothingTimeConstant = 0.85;
 	a.analyser = temp;
 
 	a.source.connect(a.analyser);
@@ -47,22 +37,25 @@ function loadVars()
 /*-----------------------------------
 		02. Event Response
 -----------------------------------*/
-document.getElementById('newFile').onchange = function(){
+document.getElementById('newFile').addEventListener("change", function(){
 	a.element.pause();
 	var file = this.files[0];
 	objURL = URL.createObjectURL(file);
 	a.element.src = objURL;
-}
+});
 
-document.getElementById('animation').onchange = function(){changeAnim(this.selectedIndex)};
+document.getElementById('animation').addEventListener("change", function(){
+	activeIndex = this.selectedIndex;
+	changeAnim(activeIndex);
+});
 
 function changeAnim(e){
-	console.log(c.onPaper);
-	clearCanvas();
+	a.element.pause();
+	updateFeed();
 	var num;
 	switch(e){
 		case 0: //bars
-			num = 10;
+			num = 9;
 			a.analyser.fftSize = 32;
 			break;
 		case 1:
@@ -71,7 +64,6 @@ function changeAnim(e){
 			break;
 	}
 	setUpCanvas(e, num);
-	view.on('frame', setFrameHandler(e));
 }
 
 /*-----------------------------------
@@ -86,7 +78,7 @@ function updateFeed(num, offset){
 		}
 	}
 	else{
-		a.feed = new Array;
+		a.feed = [];
 	}
 }
 
@@ -94,7 +86,7 @@ function updateFeed(num, offset){
 		04. Canvas Functions
 -----------------------------------*/
 function setUpCanvas(e, num){
-	var count = (num === undefined ? c.onPaper.length : num);
+	var count = (num === undefined ? project.activeLayer.children.length : num);
 	project.activeLayer.removeChildren();
 	switch(e){
 		case 0:
@@ -102,50 +94,43 @@ function setUpCanvas(e, num){
 			for(var i = 0; i < count; i++){
 				var pnt = new Point(i*barWidth, c.height*0.995);
 				var siz = new Size(barWidth-10, 3);
-				var shp = new Shape.Rectangle(pnt, siz);
-				shp.fillColor = 'black';
-				c.onPaper[i] = shp;
+				var shp = new Shape.Rectangle({
+					point: pnt, 
+					size: siz,
+					fillColor: 'black'
+				});
+				project.activeLayer.addChild(shp);
 			}
 			break;
 		case 1:
 			for(var i = 0; i < count; i++)
 			{
-				var shp = new Shape.Circle(view.center, 5*i);
-				shp.strokeColor = 'black';
-				shp.strokeWidth = 11-2*i;
-				c.onPaper[i] = shp;
+				var cir = new Shape.Circle(view.center, 100-(20*i));
+				cir.strokeColor = 'black';
+				cir.strokeWidth = 11-2*i;
+				project.activeLayer.addChild(cir);
 			}
 			break;
 	}
 }
 
-function setFrameHandler(e){
-	switch(e){
+function onFrame(e){
+	var layer = project.activeLayer;
+	switch(activeIndex){
 		case 0:
-			var frameHandler = function(e){
-				updateFeed(10, 3);
-				for(var i = 0; i < c.onPaper.length; i++){
-					c.onPaper[i].size.height = 3 + c.height * (a.feed[i]/192);
-				}
+			updateFeed(10, 4);
+			for(var i = 0; i < layer.children.length; i++){
+				layer.children[i].size.height = 3 + c.height * (a.feed[i]/150);
 			}
 			break;
 		case 1:
-			var frameHandler = function(e){
-				updateFeed(5, 5);
-				var temp = (c.width/c.height >= 1 ? c.height : c.width);
-				for(var i = 0; i < c.onPaper.length; i++){
-					c.onPaper[i].radius = ((a.feed[i]/64) + (4-i)) * (0.0625 - 0.012*i) * temp + 10;
-				}
+			updateFeed(5, 5);
+			var temp = (c.width/c.height >= 1 ? c.height : c.width);
+			for(var i = 0; i < layer.children.length; i++){
+				layer.children[i].radius = ((a.feed[i]/64) + (4-i)) * (0.0625 - 0.012*i) * temp + 10;
 			}
 			break;
 	}
-	return frameHandler;
-}
-
-function clearCanvas(){
-	a.element.pause();
-	updateFeed();
-	c.onPaper = new Array;
 }
 
 function onResize(){
