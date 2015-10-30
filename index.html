@@ -7,40 +7,42 @@
 
 	<link rel="stylesheet" href="css/audiovisual.css">
 	<link href='http://fonts.googleapis.com/css?family=Righteous' rel='stylesheet'>
-<!-- 
-	<script type="text/javascript" src="js/paper.min.js"></script>
+
+	<script type="text/javascript" src="js/paper-full.js"></script>
+<!-- 	
 	<script type="text/javascript" src="js/audiovisual.js"></script>
  -->
+
+	<script type="text/paperscript" src="js/script.js" canvas="myCanvas"></script>
+	
 </head>
 
 <body>
-	<!-- <header>
+<!-- 	<header>
 		<div>
 			<img src="resc/fullscreen.png">
 			<img src="resc/headphones.png">
 			<h2>audiograph runs best at fullscreen</h2>
 			<h2>wolfram recommends headphones</h2>
 		</div>
-	</header>
- -->
+	</header> -->
+
 	<nav>
 		<h1>audiograph</h1>
-		<select id="EPs" onChange='recordNewEP(this)'>
-			<option selected value="bars">Bars</option>
-			<option value="circle">Circle</option>
-			<option value="colors">Colors</option>
+		<select id="animation">
+			<option selected>Bars</option>
+			<option>Circle</option>
 		</select>
 	</nav>
 
-	<canvas id="myCanvas"></canvas>
+	<canvas id="myCanvas" resize></canvas>
 
 	<footer>
 		<audio controls id="myAudio" src=""></audio>
 		<label>
-			<input type="file" id="newFile" onchange='recordNewLP(this)'/>
-			<span>change music</span>
+			<input type="file" id="newFile"/>
+			<span>!change music</span>
 		</label>
 	</footer>
-
 </body>
 </html>
