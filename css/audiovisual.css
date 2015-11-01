@@ -161,7 +161,7 @@ footer label:hover::after{ width: 100%; }
 /*-----------------------------------
 		07. Media Queries
 -----------------------------------*/
-@media (max-width: 720px){
+@media (max-width: 768px){
 	footer, nav{
 		width: 95%;
 	}

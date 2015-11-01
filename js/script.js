@@ -1,9 +1,9 @@
 /*-----------------------------------
 		01. Scope Globals
 -----------------------------------*/
-var a = new Object(); //audio
+var a = new Object();
 var c = new Object(); //canvas
-var activeIndex = 0;
+var activeIndex = 0; //keeps track of which animation <option> is selected
 
 init();
 
@@ -13,6 +13,9 @@ function init(){
 	changeAnim(activeIndex);
 };
 
+/*FUNCTION loadVars() 
+		desc: sets up the audio object (=a) and the canvas object (=c)
+*/
 function loadVars()
 {
 	a.context = new (AudioContext || webkitAudioContext)();
@@ -20,6 +23,7 @@ function loadVars()
 	a.source = a.context.createMediaElementSource(a.element);
 	var temp = a.context.createAnalyser();
 	temp.smoothingTimeConstant = 0.85;
+	//arbitrary number to desensitize a.feed so the animation is smoother; the higher the number [0, 1) the less accurate the a.feed values
 	a.analyser = temp;
 
 	a.source.connect(a.analyser);
@@ -46,29 +50,40 @@ document.getElementById('newFile').addEventListener("change", function(){
 
 document.getElementById('animation').addEventListener("change", function(){
 	activeIndex = this.selectedIndex;
-	changeAnim(activeIndex);
+	changeAnim();
 });
 
-function changeAnim(e){
-	a.element.pause();
+function changeAnim(){
 	updateFeed();
+	project.activeLayer.removeChildren();
 	var num;
-	switch(e){
+	switch(activeIndex){
 		case 0: //bars
 			num = 9;
 			a.analyser.fftSize = 32;
+			//determines a.freqBin.length
 			break;
-		case 1:
+		case 1: //circle
 			num = 5;
 			a.analyser.fftSize = 32;
 			break;
+		case 2: //blob
+			num = 16;
+			a.analyser.fftSize = 64;
+			break;
 	}
-	setUpCanvas(e, num);
+	setUpCanvas(num);
 }
 
 /*-----------------------------------
 		03. Audio Functions
 -----------------------------------*/
+/*FUNCTION updateFeed(int arg1, int arg2)
+		desc: updates a.feed's values; if num is undefined, refreshes a.feed to an empty array
+		inputs: arg1 = (x >= 1), arg2 = (x >= 0)
+			arg1 -> optional: defines a.feed.length; if undefined, creates empty array
+			arg2 -> optional: defines from what index in a.freqBin we start pulling values
+*/
 function updateFeed(num, offset){
 	if(num !== undefined){
 		a.analyser.getByteFrequencyData(a.freqBin);
@@ -85,13 +100,11 @@ function updateFeed(num, offset){
 /*-----------------------------------
 		04. Canvas Functions
 -----------------------------------*/
-function setUpCanvas(e, num){
-	var count = (num === undefined ? project.activeLayer.children.length : num);
-	project.activeLayer.removeChildren();
-	switch(e){
+function setUpCanvas(num){
+	switch(activeIndex){
 		case 0:
-			var barWidth = ~~(c.width/count);
-			for(var i = 0; i < count; i++){
+			var barWidth = ~~(c.width/num);
+			for(var i = 0; i < num; i++){
 				var pnt = new Point(i*barWidth, c.height*0.995);
 				var siz = new Size(barWidth-10, 3);
 				var shp = new Shape.Rectangle({
@@ -103,32 +116,80 @@ function setUpCanvas(e, num){
 			}
 			break;
 		case 1:
-			for(var i = 0; i < count; i++)
+			for(var i = 0; i < num; i++)
 			{
-				var cir = new Shape.Circle(view.center, 100-(20*i));
-				cir.strokeColor = 'black';
-				cir.strokeWidth = 11-2*i;
+				var cir = new Shape.Circle({
+					center: view.center,
+					radius: 100 - (20 * i),
+					strokeColor: 'black',
+					strokeWidth: 11 - 2 * i
+				});
 				project.activeLayer.addChild(cir);
 			}
 			break;
+		case 2:
+			var path = new Path({
+				strokeColor: 'black',
+				strokeWidth: 10,
+				closed: true
+			})
+			var segmentArray = [];
+			for(var i = 0; i < num; i++){
+				var hypotneuse = (i%2 === 0 ? 60 : 50);
+				segmentArray[i] = new Point(view.center.x - hypotneuse * Math.cos(i*0.39269915) , view.center.y - hypotneuse * Math.sin(i*0.39269915));
+			}
+			path.addSegments(segmentArray);
+			project.activeLayer.addChild(path.smooth());
 	}
 }
 
 function onFrame(e){
-	var layer = project.activeLayer;
+	var layer = project.activeLayer.children;
+	//a.feed[i] will be referred to as 'x' in the Equation Breakdowns below
 	switch(activeIndex){
 		case 0:
-			updateFeed(10, 4);
-			for(var i = 0; i < layer.children.length; i++){
-				layer.children[i].size.height = 3 + c.height * (a.feed[i]/150);
+			updateFeed(layer.length, 4);
+			for(var i = 0; i < layer.length; i++){
+				layer[i].size.height = 3 + c.height * (a.feed[i]/150);
+				/* Equation Breakdown:
+						3 -> minimum bar height when x equals 0
+						c.height -> height of canvas, to prevent overflow
+						x/150 -> returns x as a percentage of 150 */
 			}
 			break;
 		case 1:
-			updateFeed(5, 5);
-			var temp = (c.width/c.height >= 1 ? c.height : c.width);
-			for(var i = 0; i < layer.children.length; i++){
-				layer.children[i].radius = ((a.feed[i]/64) + (4-i)) * (0.0625 - 0.012*i) * temp + 10;
+			updateFeed(layer.length, 5);
+			var viewportOrientation = (c.width/c.height >= 1 ? c.height : c.width);
+			for(var i = 0; i < layer.length; i++){
+				layer[i].radius = ((a.feed[i]/96) + Math.pow(0.5, i)) * (0.125 - 0.024*i) * viewportOrientation + (3*i);
+				/* Equation Breakdown:
+						x/96 -> returns a number in range [0, 2.66)
+						Math.pow(0.5, i) -> minimum value modifier to reduce liklihood of ring collision
+						0.125 - 0.024*i -> ensures that each successive ring gets smaller; the radius on the rings will be [0.5%, 50%]
+						3*i -> minimum ring size */
 			}
+			break;
+		case 2:
+			updateFeed(layer[0].segments.length, 6);
+			var viewportOrientation = (c.width/c.height >= 1 ? c.height : c.width);
+			var meanFeed = 0;
+			for(var i in a.feed){ meanFeed += a.feed[i]; }
+			meanFeed /= a.feed.length;
+
+			for(var i = 0; i < layer[0].segments.length; i++){
+				var hypotneuse = ( Math.pow(-1, i) * Math.pow(a.feed[i], 2) * Math.log(a.feed[i]+1) / 3600000 + meanFeed/550 ) * viewportOrientation + 30;
+				/* Equation Breakdown:
+						Math.pow(-1, i) -> alternates between high and low points
+						Math.pow(x, 2)/(16*10*4096) -> dampens the amplitude to reduce sharp peaks between high and low points; limits range to [0, 0.1)
+						Math.log(x+1)/log(255) -> significantly raises the amplitude of x[i] when below 100 to decrease the liklihood of a large arc
+						meanFeed/550 -> grows and shrinks entire blob; range approx. [0, 0.45)
+						30 -> minimum hypotneuse length of prevent point from falling into center of view */
+				layer[0].segments[i].point.x = view.center.x - hypotneuse * Math.cos(i * 0.39269915 + e.count/300);
+				layer[0].segments[i].point.y = view.center.y - hypotneuse * Math.sin(i * 0.39269915 + e.count/300);
+				/*	22.5deg -> 0.39269915rad
+						e.count/300 -> rotates blob by ~0.2 degrees per frame */
+			}
+			layer[0].smooth();
 			break;
 	}
 }
@@ -136,5 +197,5 @@ function onFrame(e){
 function onResize(){
 	c.width = project.view.viewSize.width;
 	c.height = project.view.viewSize.height;
-	setUpCanvas(document.getElementById('animation').selectedIndex);
+	changeAnim();
 }
