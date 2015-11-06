@@ -8,7 +8,7 @@ html, body{
 }
 html{ font-size: 62.5%; }
 
-h1, h2, select, label{
+h1, h2, h3, select, label{
 	font-family: 'Righteous', cursive;
 	line-height: 1;
 	text-transform: uppercase;
@@ -17,6 +17,12 @@ h1, h2, select, label{
 }
 h1{ font-size: 3rem; }
 h2{ font-size: 2.5rem; }
+h3{
+	display: inline-block;
+	margin-right: 10px;
+	font-size: 2.2rem;
+	letter-spacing: 1px;
+}
 select:focus, option:focus{
 	outline: none;
 }
@@ -72,9 +78,12 @@ nav h1{
 nav h1::after{
 	content: " by wolfram";
 }
-nav select{
+nav div{
 	position: absolute;
 	right: 0;
+	top: 20px;
+}
+nav select{
 	border: none;
 	border-bottom: 3px solid black;
 	padding: 5px 35px 5px 5px;
@@ -92,6 +101,7 @@ nav select, nav option{ letter-spacing: 1px; }
 /*-----------------------------------
 		04. Canvas
 -----------------------------------*/
+.canvas-container{ position: relative; }
 #myCanvas{
 	display: block;
 	margin: 0 auto;
@@ -99,6 +109,14 @@ nav select, nav option{ letter-spacing: 1px; }
 	height: calc(100vh - 140px);
 	min-height: 480px;
 }
+.canvas-container img{
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	transition: opacity 0.2s linear;
+}
+.canvas-container img:hover{ cursor: pointer; }
 
 /*-----------------------------------
 		05. Footer
@@ -161,7 +179,7 @@ footer label:hover::after{ width: 100%; }
 /*-----------------------------------
 		07. Media Queries
 -----------------------------------*/
-@media (max-width: 768px){
+@media (max-width: 900px){
 	#myCanvas{ width: 100vw; }
 	nav h1::after{ content: ""; }
 	footer, nav{ width: 95%; }

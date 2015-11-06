@@ -1,16 +1,35 @@
 /*-----------------------------------
 		01. Scope Globals
 -----------------------------------*/
-var a = new Object();
+var a = new Object(); //audio
 var c = new Object(); //canvas
 var activeIndex = 0; //keeps track of which animation <option> is selected
+var $newFile = document.getElementById('newFile'); //change music button
+var $dropdown = document.getElementById('animation'); //dropdown menu
+var $playButton = document.querySelector('.canvas-container img');
 
 init();
 
 function init(){
-	//setTimeout(function(){document.getElementsByTagName("header")[0].style.display="none";}, 3500);
+	//fade out splash screen after 3.5 seconds
+	setTimeout(function(){
+		document.getElementsByTagName("header")[0].style.display="none";
+	}, 3500);
 	loadVars();
 	changeAnim(activeIndex);
+
+	//set up EventListeners
+	$newFile.addEventListener("change", function(){
+		a.element.pause();
+		var file = this.files[0];
+		objURL = URL.createObjectURL(file);
+		a.element.src = objURL;
+	});
+	$dropdown.addEventListener("change", function(){
+		activeIndex = this.selectedIndex;
+		changeAnim();
+	});
+	$playButton.addEventListener("click", function(){ a.element.play(); });
 }
 
 /*FUNCTION loadVars() 
@@ -35,24 +54,22 @@ function loadVars()
 	c.width = project.view.viewSize.width;
 	c.height = project.view.viewSize.height;
 	
-	a.element.onplay = function(){ project.view.play(); };
-	a.element.onpause = function(){ project.view.pause(); };
+	a.element.onplay = function(){
+		$playButton.style.opacity = 0;
+		project.view.play();
+	};
+	a.element.onpause = function(){
+		$playButton.style.opacity = 1;
+		project.view.pause();
+	};
 }
+
 /*-----------------------------------
 		02. Event Response
 -----------------------------------*/
-document.getElementById('newFile').addEventListener("change", function(){
-	a.element.pause();
-	var file = this.files[0];
-	objURL = URL.createObjectURL(file);
-	a.element.src = objURL;
-});
-
-document.getElementById('animation').addEventListener("change", function(){
-	activeIndex = this.selectedIndex;
-	changeAnim();
-});
-
+/*FUNCTION changeAnim()
+		desc: tells setUpCanvas() how many elements to create and a.freqBin how many values to collect from audio stream
+*/
 function changeAnim(){
 	updateFeed();
 	project.activeLayer.removeChildren();
@@ -61,7 +78,7 @@ function changeAnim(){
 		case 0: //bars
 			num = 9;
 			a.analyser.fftSize = 32;
-			//determines a.freqBin.length
+			//determines a.freqBin.length; must be a power of 2 greater than 32
 			break;
 		case 1: //circle
 			num = 5;
@@ -108,6 +125,11 @@ function updateFeed(num, offset){
 /*-----------------------------------
 		04. Canvas Functions
 -----------------------------------*/
+/*FUNCTION setUpCanvas(int arg1)
+		desc: adds children to the activeLayer that will be manipulated by onFrame()
+		inputs: arg1 = (activeIndex || x >= 0)
+			arg1 -> determines which set of children to instantiate
+*/
 function setUpCanvas(num){
 	switch(activeIndex){
 		case 0:
@@ -121,6 +143,10 @@ function setUpCanvas(num){
 					size: siz,
 					fillColor: 'black'
 				});
+				/* Process Breakdown:
+						pnt -> defines the bottom left point of the bar
+						siz -> sets width equal to 1/num of c.width short 10 pixels to create a gap between bars; height equals a constant 3px
+						shp -> instantiate a rectangle shape and add it to activeLayer */
 				project.activeLayer.addChild(shp);
 			}
 			break;
@@ -133,6 +159,9 @@ function setUpCanvas(num){
 					strokeColor: 'black',
 					strokeWidth: 11 - 2 * i
 				});
+				/* Process Breakdown:
+						view.center -> center of circle is the center of screen
+						radius -> consecutive circles' radii get smaller in increments of 20px */
 				project.activeLayer.addChild(cir);
 			}
 			break;
@@ -145,13 +174,17 @@ function setUpCanvas(num){
 			var segmentArray = [];
 
 			for(var i = 0; i < num; i++){
-				var hypotneuse = (i%2 === 0 ? 60 : 50);
+				var hypotneuse = (i % 2 === 0 ? 60 : 50);
 				segmentArray[i] = new Point(view.center.x - hypotneuse * Math.cos(i*0.39269915) , view.center.y - hypotneuse * Math.sin(i*0.39269915));
 			}
+			/* Process Breakdown:
+						segmentArray -> list of points that will connect to create a path
+						hypotneuse -> calculates the cartesian coordinates of the points rotating around view.center and alternating in distance between 60 and 50 */
 			path.addSegments(segmentArray);
 			project.activeLayer.addChild(path.smooth());
 			break;
 		case 3:
+			//waves and string share the same initialization code in the sense that we create a set of equidistant points across the center the of view
 		case 4:
 			var path = new Path({
 				strokeColor: 'black',
@@ -160,17 +193,27 @@ function setUpCanvas(num){
 			});
 			var segmentArray = [[0, view.center.y]];
 
-			var gapWidth = ~~((c.width-20)/num);
+			var gapWidth = ~~((c.width - 20)/num);
 			for(var i = 1; i < num; i++){
 				segmentArray[i] = new Point((gapWidth*i), view.center.y + Math.pow(-1, i) * 20);
 			}
+			/* Process Breakdown:
+						segmentArray -> list of points that will connect to create a path
+						[0, view.center.y] -> creates a fixed point at the left edge of the screen 
+						c.width - 20 -> we want to give the fixed points at the left and right edges at least 10 pixels of margin each */
 			segmentArray.push([c.width, view.center.y])
+			//add a fixed point at the right edge of the screen
 			path.addSegments(segmentArray);
 			project.activeLayer.addChild(path.smooth());
 			break;
 	}
 }
 
+/*FUNCTION onFrame(Obj arg1)
+		desc: code to run on every frame during runtime
+		inputs:
+			arg1 -> event object generated by PaperJS during runtime
+*/
 function onFrame(e){
 	var layer = project.activeLayer.children;
 	//a.feed[i] will be referred to as 'x' in the Equation Breakdowns below
@@ -249,5 +292,5 @@ function onFrame(e){
 function onResize(){
 	c.width = project.view.viewSize.width;
 	c.height = project.view.viewSize.height;
-	changeAnim();
+	changeAnim(); //redraw canvas objects to refit screen
 }

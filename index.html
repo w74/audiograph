@@ -15,27 +15,33 @@
 </head>
 
 <body>
-<!-- 	<header>
+	<header>
 		<div>
 			<img src="resc/fullscreen.png">
 			<img src="resc/headphones.png">
 			<h2>audiograph runs best at fullscreen</h2>
 			<h2>wolfram recommends headphones</h2>
 		</div>
-	</header> -->
+	</header>
 
 	<nav>
 		<h1>audiograph</h1>
-		<select id="animation">
-			<option>Bars</option>
-			<option>Circle</option>
-			<option>Blob</option>
-			<option>Wave</option>
-			<option>String</option>
-		</select>
+		<div>
+			<h3>Display:</h3>
+			<select id="animation">
+				<option>Bars</option>
+				<option>Circle</option>
+				<option>Blob</option>
+				<option>Wave</option>
+				<option>String</option>
+			</select>
+		</div>
 	</nav>
 
-	<canvas id="myCanvas" resize></canvas>
+	<div class="canvas-container">
+		<canvas id="myCanvas" resize></canvas>
+		<img src="resc/play.svg">
+	</div>
 
 	<footer>
 		<audio controls id="myAudio" src="resc/retrosoul-by-bensound.mp3"></audio>
