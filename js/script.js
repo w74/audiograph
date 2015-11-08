@@ -6,7 +6,7 @@ var c = new Object(); //canvas
 var activeIndex = 0; //keeps track of which animation <option> is selected
 var $newFile = document.getElementById('newFile'); //change music button
 var $dropdown = document.getElementById('animation'); //dropdown menu
-var $playButton = document.querySelector('.canvas-container img');
+var $playButton = document.querySelector('.canvas-container figure'); //overlay on music pause
 
 init();
 
@@ -24,6 +24,7 @@ function init(){
 		var file = this.files[0];
 		objURL = URL.createObjectURL(file);
 		a.element.src = objURL;
+		a.element.play();
 	});
 	$dropdown.addEventListener("change", function(){
 		activeIndex = this.selectedIndex;
@@ -53,13 +54,20 @@ function loadVars()
 	c.context = c.element.getContext("2d");
 	c.width = project.view.viewSize.width;
 	c.height = project.view.viewSize.height;
+
+	var buffer = false; //due to the fact that skipping causes a pause() event to trigger, we use this time buffer to prevent $playButton from appearing when simply skipping around
 	
 	a.element.onplay = function(){
+		buffer = false;
 		$playButton.style.opacity = 0;
 		project.view.play();
 	};
 	a.element.onpause = function(){
-		$playButton.style.opacity = 1;
+		buffer = true;
+		//if play has not resumed in 200ms, display figure
+		setTimeout(function(){
+			if(buffer){$playButton.style.opacity = 1;}
+		}, 200);
 		project.view.pause();
 	};
 }
