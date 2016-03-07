@@ -1,5 +1,5 @@
 #Audiograph
-Link to a live version of [Audiograph](http://www.wolfram74.com/area51/audiograph/)
+Link to a live version of [Audiograph](http://audiograph.modulo.site)
 
 ###Local Version
 * To run Audiograph locally, clone the repo to a local folder
